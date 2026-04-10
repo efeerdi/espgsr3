@@ -5,7 +5,7 @@ import time
 
 # --- CONFIGURATION ---
 # Replace this with your actual Firebase URL (must end in .json)
-FIREBASE_URL = "https://espgsr3-default-rtdb.europe-west1.firebasedatabase.app/lastest.json"
+FIREBASE_URL = "https://espgsr3-default-rtdb.europe-west1.firebasedatabase.app/latest.json"
 
 # Set up the web page layout
 st.set_page_config(page_title="ESP32-C6 Dashboard", page_icon="📡", layout="wide")
