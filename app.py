@@ -25,16 +25,11 @@ def get_latest_data():
         return None
 
 def parse_payload(raw_text):
-    """
-    Extracts data from the custom format: #ID%KEY%VALUE#
-    Example: #15944%RMS1000%225# -> Key: RMS1000, Value: 225
-    """
     parsed_data = {}
     if not raw_text:
         return parsed_data
-        
-    # Regex pattern to find everything between % and % and the final #
-    # It looks for: # (numbers) % (text) % (numbers) #
+    
+    # This pattern handles multi-line strings from your log
     pattern = r"#\d+%([^%]+)%([^#]+)#"
     matches = re.findall(pattern, raw_text)
     
