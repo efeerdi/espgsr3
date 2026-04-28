@@ -7,7 +7,7 @@ import time
 
 # --- KONFİGÜRASYON ---
 # Firebase URL'sinin sonuna .json eklenmiş hali
-FIREBASE_URL = "https://espgsr3-default-rtdb.europe-west1.firebasedatabase.app/history.json"
+FIREBASE_URL = "https://espgsr3-default-rtdb.europe-west1.firebasedatabase.app/history.json?auth=RHH3pZHZbQ0idDw5fJJNazR3mAVduBEqLnV6Yeam"
 
 st.set_page_config(page_title="ESP32-C6 Panel", page_icon="📈", layout="wide")
 
