@@ -85,62 +85,72 @@ def parse_history(firebase_data):
         
     return parsed_records
 
+# ... (Yukarıdaki importlar, ayarlar ve fonksiyonlar aynı kalacak) ...
+
 # --- ANA EKRAN İŞLEMLERİ ---
 
-# Veriyi çek
-raw_data = fetch_data(data_limit)
+# Ekrandaki değişecek her şeyi içine koyacağımız boş bir kutu (placeholder) oluşturuyoruz
+placeholder = st.empty()
 
-if raw_data:
-    # Veriyi Pandas Tablosuna (DataFrame) çevir
-    records = parse_history(raw_data)
-    
-    if len(records) > 0:
-        df = pd.DataFrame(records)
-        
-        # Zaman damgasına göre sırala (En yeni en üstte)
-        df = df.sort_values(by="Timestamp", ascending=False).drop(columns=["Timestamp"])
-        
-        # En son gelen veriyi al
-        latest_data = df.iloc[0]
-        
-        st.subheader(f"🔴 Canlı Veriler (Son Okuma: {latest_data['Zaman']})")
-        
-        # Sadece sayısal/sensör değerlerini bul (Zaman sütunu hariç)
-        metric_cols = [col for col in df.columns if col != 'Zaman']
-        
-        # Metrik kartlarını oluştur
-        cols = st.columns(len(metric_cols))
-        for idx, col_name in enumerate(metric_cols):
-            cols[idx].metric(label=col_name, value=latest_data[col_name])
+# Sonsuz döngü başlatıyoruz (st.rerun yerine bunu kullanıyoruz)
+while True:
+    # Veriyi çek
+    raw_data = fetch_data(data_limit)
 
-        st.divider()
-
-        # Grafik ve Tabloyu yan yana diz
-        col1, col2 = st.columns([5, 3])
-        
-        with col1:
-            st.subheader("📉 Zaman İçinde Değişim")
+    # Her döngüde placeholder'ın içini temizleyip yeni verilerle dolduruyoruz
+    with placeholder.container():
+        if raw_data:
+            # Veriyi Pandas Tablosuna (DataFrame) çevir
+            records = parse_history(raw_data)
             
-            # Grafik için veriyi hazırla (Eskiden yeniye doğru akması için ters çeviriyoruz)
-            chart_df = df.copy()
-            chart_df = chart_df.set_index('Zaman').iloc[::-1]
-            
-            # Sütunları sayı formatına (Float/Int) zorla ki grafik çizilebilsin
-            for c in metric_cols:
-                chart_df[c] = pd.to_numeric(chart_df[c], errors='coerce')
+            if len(records) > 0:
+                df = pd.DataFrame(records)
                 
-            st.line_chart(chart_df)
-        
-        with col2:
-            st.subheader(f"📜 Son {len(df)} Kayıt")
-            # Tabloyu ekrana sığdır
-            st.dataframe(df, use_container_width=True, height=400)
-    else:
-        st.warning("Veriler parçalanamadı. Gönderilen veri formatını kontrol edin.")
-else:
-    st.info("Veritabanı boş veya cihazdan veri bekleniyor...")
+                # Zaman damgasına göre sırala (En yeni en üstte)
+                df = df.sort_values(by="Timestamp", ascending=False).drop(columns=["Timestamp"])
+                
+                # En son gelen veriyi al
+                latest_data = df.iloc[0]
+                
+                st.subheader(f"🔴 Canlı Veriler (Son Okuma: {latest_data['Zaman']})")
+                
+                # Sadece sayısal/sensör değerlerini bul (Zaman sütunu hariç)
+                metric_cols = [col for col in df.columns if col != 'Zaman']
+                
+                # Metrik kartlarını oluştur
+                cols = st.columns(len(metric_cols))
+                for idx, col_name in enumerate(metric_cols):
+                    cols[idx].metric(label=col_name, value=latest_data[col_name])
 
-# --- DİNAMİK YENİLEME DÖNGÜSÜ ---
-# Kullanıcının yan menüden seçtiği süre kadar bekle ve sayfayı baştan yükle
-time.sleep(refresh_rate)
-st.rerun()
+                st.divider()
+
+                # Grafik ve Tabloyu yan yana diz
+                col1, col2 = st.columns([5, 3])
+                
+                with col1:
+                    st.subheader("📉 Zaman İçinde Değişim")
+                    
+                    # Grafik için veriyi hazırla (Eskiden yeniye doğru akması için ters çeviriyoruz)
+                    chart_df = df.copy()
+                    chart_df = chart_df.set_index('Zaman').iloc[::-1]
+                    
+                    # Sütunları sayı formatına (Float/Int) zorla ki grafik çizilebilsin
+                    for c in metric_cols:
+                        chart_df[c] = pd.to_numeric(chart_df[c], errors='coerce')
+                        
+                    st.line_chart(chart_df)
+                
+                with col2:
+                    st.subheader(f"📜 Son {len(df)} Kayıt")
+                    # Tabloyu ekrana sığdır
+                    st.dataframe(df, use_container_width=True, height=400)
+            else:
+                st.warning("Veriler parçalanamadı. Gönderilen veri formatını kontrol edin.")
+        else:
+            st.info("Veritabanı boş veya cihazdan veri bekleniyor...")
+
+    # Döngünün sonunda, yan menüden seçilen hız (refresh_rate) kadar bekle
+    time.sleep(refresh_rate)
+
+
+
